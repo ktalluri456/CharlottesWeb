@@ -19,12 +19,27 @@ def index():
         hometown = request.form['hometown']
         personal_id = request.form['personal_id']
         leadership_rating = int(request.form['leadership_rating'])
-        
+
         new_member = TeamMember(name=name, hometown=hometown, personal_id=personal_id, leadership_rating=leadership_rating)
         db.session.add(new_member)
         db.session.commit()
-        return redirect(url_for('index'))
+
+        return redirect(url_for('thank_you', personal_id=personal_id))  # Redirect to thank you page
     return render_template('index.html')
+
+@app.route('/thanks/<personal_id>')
+def thank_you(personal_id):
+    current_member = TeamMember.query.filter_by(personal_id=personal_id).first()
+    if not current_member:
+        return "Member not found", 404
+
+    # For simplicity, let's consider a match to be anyone within +/- 2 points of the leadership rating.
+    potential_matches = TeamMember.query.filter(
+        TeamMember.leadership_rating.between(current_member.leadership_rating - 2, current_member.leadership_rating + 2),
+        TeamMember.id != current_member.id  # Exclude the current member
+    ).all()
+
+    return render_template('thank_you.html', current_member=current_member, matches=potential_matches)
 
 if __name__ == "__main__":
     with app.app_context():  # <-- This ensures the app context is present

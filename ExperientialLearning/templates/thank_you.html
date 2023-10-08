@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thank You</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Thank You, {{ current_member.name }}!</h1>
+        <p>We've registered your details. Here are potential matches based on leadership ratings:</p>
+
+        <ul>
+            {% for match in matches %}
+                <li>{{ match.name }} from {{ match.hometown }} with leadership rating: {{ match.leadership_rating }}</li>
+            {% endfor %}
+        </ul>
+        
+        <a href="{{ url_for('index') }}">Back to registration</a>
+    </div>
+</body>
+</html>
