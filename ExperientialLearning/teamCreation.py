@@ -24,7 +24,7 @@ def index():
         db.session.add(new_member)
         db.session.commit()
 
-        return redirect(url_for('thank_you', personal_id=personal_id))  # Redirect to thank you page
+        return redirect(url_for('thank_you', personal_id=personal_id))  
     return render_template('index.html')
 
 @app.route('/thanks/<personal_id>')
@@ -33,15 +33,15 @@ def thank_you(personal_id):
     if not current_member:
         return "Member not found", 404
 
-    # For simplicity, let's consider a match to be anyone within +/- 2 points of the leadership rating.
     potential_matches = TeamMember.query.filter(
-        TeamMember.leadership_rating.between(current_member.leadership_rating - 2, current_member.leadership_rating + 2),
-        TeamMember.id != current_member.id  # Exclude the current member
-    ).all()
+        TeamMember.id != current_member.id
+    ).order_by(
+        db.func.abs(TeamMember.leadership_rating - current_member.leadership_rating).desc()
+    ).limit(5).all()
 
     return render_template('thank_you.html', current_member=current_member, matches=potential_matches)
 
 if __name__ == "__main__":
-    with app.app_context():  # <-- This ensures the app context is present
+    with app.app_context():
         db.create_all()
     app.run(debug=True)
